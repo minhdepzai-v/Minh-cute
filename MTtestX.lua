@@ -1910,55 +1910,56 @@ local farmOn = false
 
 FarmLv:OnChanged(function(val)
     farmOn = val
-    
-    while farmOn do
-        pcall(function()
-            -- Cập nhật level
-            CheckLv()
-            
-            -- Kiểm tra và nhận quest
-            if not HasQuest() then
-                if PosQ then
-                    Fly(PosQ, 300)
-                    task.wait(0.5)
-                    AcceptQuest()
-                end
-            else
-                -- Tìm và farm enemy
-                local enemies = Workspace.Enemies:GetChildren()
-                local found = false
-                
-                for _, enemy in pairs(enemies) do
-                    if enemy.Name == Mon and enemy.Humanoid.Health > 0 then
-                        found = true
-                        local dis = (lp.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude
-                        
-                        if dis > 20 then
-                            Fly(enemy.HumanoidRootPart, 300)
-                        else
-                            AutoHaki()
-                            AttackNoCoolDown()
+
+    if farmOn then
+        task.spawn(function()
+            while farmOn do
+                pcall(function()
+                    local char = lp.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if not hrp then return end
+
+                    CheckLv()
+
+                    -- CHƯA CÓ QUEST
+                    if not HasQuest() then
+                        if PosQ then
+                            Fly(CFrame.new(PosQ.Position), 300)
+                            task.wait(0.5)
+                            AcceptQuest()
                         end
-                        break
+
+                    else
+                        local found = false
+
+                        for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                            if enemy.Name == Mon
+                            and enemy:FindFirstChild("Humanoid")
+                            and enemy:FindFirstChild("HumanoidRootPart")
+                            and enemy.Humanoid.Health > 0 then
+
+                                found = true
+                                local eHRP = enemy.HumanoidRootPart
+                                local dis = (hrp.Position - eHRP.Position).Magnitude
+
+                                if dis > 20 then
+                                    Fly(eHRP.CFrame, 300)
+                                else
+                                    AutoHaki()
+                                    AttackNoCoolDown()
+                                end
+                                break
+                            end
+                        end
+
+                        -- KHÔNG TÌM THẤY QUÁI → BAY VỀ SPAWN
+                        if not found and PosM then
+                            Fly(CFrame.new(PosM.Position), 300)
+                        end
                     end
-                end
-                
-                -- Nếu không có enemy, bay đến spawn
-                if not found and PosM then
-                    Fly(PosM, 300)
-                end
+                end)
+                task.wait(0.1)
             end
         end)
-        task.wait(0.1)
-    end
-    
-    -- Dọn dẹp khi tắt
-    local char = lp.Character
-    if char and char.HumanoidRootPart then
-        for _, obj in pairs(char.HumanoidRootPart:GetChildren()) do
-            if obj:IsA("BodyVelocity") or obj:IsA("BodyGyro") then
-                obj:Destroy()
-            end
-        end
     end
 end)
