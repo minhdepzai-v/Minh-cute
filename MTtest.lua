@@ -4,7 +4,7 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local CommF = Remotes:WaitForChild("CommF_")
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local TeamSelf = game.Players.lp.Team
+local TeamSelf = lp.Team
 local Id = game.PlaceId
 -- Check Sea And Team And Attack --
 Sea1 = false
