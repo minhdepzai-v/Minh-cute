@@ -1980,9 +1980,8 @@ Level:Callback(function(Value)
 end)
 task.spawn(function()
 	while task.wait(Sec) do
-		if not _G.Lv then continue end
+		if not _G.Lv then shouldTween=false continue end
 		pcall(function()
-			-- QUEST
 			if not HasQuest() then
 				AbandonQuest()
 				_tp(CFrameQuest)
@@ -1996,17 +1995,15 @@ task.spawn(function()
 				return
 			end
 
-			-- FIND MOB
 			local mob
 			for _,v in pairs(workspace.Enemies:GetChildren()) do
 				if v.Name==NameMon and v:FindFirstChild("Humanoid") and v.Humanoid.Health>0 and v:FindFirstChild("HumanoidRootPart") then
-					mob=v
-					break
+					mob=v break
 				end
 			end
 
-			-- FARM
 			if mob then
+				shouldTween=true
 				repeat
 					if not _G.Lv or not mob.Parent or mob.Humanoid.Health<=0 then break end
 					AutoHaki()
@@ -2016,6 +2013,7 @@ task.spawn(function()
 					task.wait(0.1)
 				until false
 			else
+				shouldTween=true
 				_tp(CFrameMon)
 			end
 		end)
