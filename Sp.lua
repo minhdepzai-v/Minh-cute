@@ -1969,51 +1969,106 @@ GetWP=function(name)
 	end
 	return false
 end
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+function FindEnemiesInRange(list, enemies)
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local pos = char:GetPivot().Position
+    local lastHead
+    for _, mob in ipairs(enemies) do
+        local hum = mob:FindFirstChildOfClass("Humanoid")
+        local head = mob:FindFirstChild("Head")
+        if hum and head and hum.Health > 0 and not mob:GetAttribute("IsBoat") then
+            if mob ~= char and (pos - head.Position).Magnitude <= 60 then
+                table.insert(list, {mob, head})
+                lastHead = head
+            end
+        end
+    end
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local head = plr.Character:FindFirstChild("Head")
+            if head and (pos - head.Position).Magnitude <= 60 then
+                table.insert(list, {plr.Character, head})
+                lastHead = head
+            end
+        end
+    end
+    return lastHead
+end
+local Players = game:GetService("Players")
+local v21 = Players.LocalPlayer
+function GetEquippedTool()
+    local char = v21.Character
+    if not char then return nil end
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") then return tool end
+    end
+    return nil
+end
+function AttackNocoolDown()
+    local hits = {}
+    local enemies = Workspace.Enemies:GetChildren()
+    local targetHead = FindEnemiesInRange(hits, enemies)
+    if not targetHead or #hits == 0 then return end
+    local RegisterAttack = ReplicatedStorage.Modules.Net.RE.RegisterAttack
+    local RegisterHit = ReplicatedStorage.Modules.Net.RE.RegisterHit
+    RegisterAttack:FireServer(1e-9)
+    RegisterHit:FireServer(targetHead, hits)
+end
 
-local Level = Main:AddToggle({
-  Name = "Cày Cấp",
-  Description = "",
-  Default = false 
+local weapon = Main:AddSection({"Hung Khí"})
+local Players = game:GetService("Players")
+local Backpack = Players.LocalPlayer.Backpack
+ChooseWeapon = "Melee"
+SelectWeapon = nil
+local Weapon = Main:AddDropdown({
+    Name = "Chọn Hung Khí",
+    Options = {"Melee","Blox Fruit","Sword","Gun"},
+    Default = "Melee",
+    Flag = "Weapon",
+    Callback = function(Value)
+        ChooseWeapon = Value
+    end
 })
-Level:Callback(function(Value)
- _G.Lv = Value
+task.spawn(function()
+    while task.wait() do
+        for _, tool in ipairs(Backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.ToolTip == ChooseWeapon then
+                SelectWeapon = tool.Name
+                break
+            end
+        end
+    end
 end)
+Main:AddSection({"Cày Chính"})
+local FarmLv=Main:AddToggle({Name="Cày Cấp",Default=false})
+FarmLv:Callback(function(v)_G.Level=v end)
 task.spawn(function()
 	while task.wait(0.1) do
-		if not _G.Lv then shouldTween=false continue end
+		if not _G.Level then shouldTween=false continue end
 		pcall(function()
-			if not HasQuest() then
-				shouldTween=true
-				AbandonQuest()
-				_tp(CFrameQuest)
-				RS.Remotes.CommF_:InvokeServer("StartQuest",NameQuest,LevelQuest)
-				task.wait(0.5)
+			local Quest=plr.PlayerGui.Main.Quest
+			local QuestTitle=Quest.Container.QuestTitle.Title.Text
+			if Quest.Visible and not string.find(QuestTitle,NameMon) then
+				game.ReplicatedStorage.Remotes.CommF_:InvokeServer("AbandonQuest")
+				task.wait(0.2)
 				return
 			end
-			if not RightQuest() then
-				AbandonQuest()
+			if not Quest.Visible then
+				shouldTween=true
+				_tp(CFrameQuest)
+				game.ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest",NameQuest,LevelQuest)
 				task.wait(0.3)
 				return
 			end
-			local mob
-			for _,v in pairs(workspace.Enemies:GetChildren()) do
-				if v.Name==NameMon and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health>0 then
-					mob=v break
-				end
-			end
 			shouldTween=true
-			if mob then
-				repeat
-					if not _G.Lv or not mob.Parent or mob.Humanoid.Health<=0 then break end
-					AutoHaki()
-					weaponSc("Tool")
-					_tp(mob.HumanoidRootPart.CFrame*CFrame.new(0,30,0))
-					BringEnemy()
-					task.wait(0.1)
-				until false
-			else
-				_tp(CFrameMon)
-			end
+			_tp(CFrameMon)
+			BringEnemy()
+			AutoHaki()
+			AttackNocoolDown()
 		end)
 	end
 end)
