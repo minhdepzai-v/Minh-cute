@@ -1970,85 +1970,51 @@ GetWP=function(name)
 	return false
 end
 
--- SERVICES
-local plr=game.Players.LocalPlayer
-local RS=game:GetService("ReplicatedStorage")
-local TweenService=game:GetService("TweenService")
-
--- GLOBAL
-getgenv().shouldTween=false
-getgenv().OnFarm=false
-_G.Lv=false
-local Sec=0.1
-
--- BLOCK BAY
-
-local QuestUI=plr.PlayerGui.Main.Quest
-
-local function HasQuest()
-	return QuestUI.Visible
-end
-
-local function RightQuest()
-	return HasQuest() and string.find(QuestUI.Container.QuestTitle.Title.Text,Mon)
-end
-
-local function AbandonQuest()
-	RS.Remotes.CommF_:InvokeServer("AbandonQuest")
-end
-
-local function TakeQuest()
-	_tp(CFrameQuest)
-	RS.Remotes.CommF_:InvokeServer("StartQuest",NameQuest,LevelQuest)
-end
-
--- FIND MOB
-local function GetMob()
-	for _,v in pairs(workspace.Enemies:GetChildren()) do
-		if v.Name==NameMon and v:FindFirstChild("Humanoid") and v.Humanoid.Health>0 and v:FindFirstChild("HumanoidRootPart") then
-			return v
-		end
-	end
-end
-
--- KILL
-local function KillMob(mob)
-	repeat
-		if not _G.Lv or not mob.Parent or mob.Humanoid.Health<=0 then break end
-		AutoHaki()
-		weaponSc("Tool")
-		_tp(mob.HumanoidRootPart.CFrame*CFrame.new(0,30,0))
-		task.wait(0.1)
-	until false
-end
-
--- TOGGLE FARM
-
-local FarmLv = Main:AddToggle({
+local Level = Main:AddToggle({
   Name = "Cày Cấp",
   Description = "",
   Default = false 
 })
-FarmLv:Callback(function(Value)
+Level:Callback(function(Value)
  _G.Lv = Value
 end)
 task.spawn(function()
-	while task.wait(0.1) do
+	while task.wait(Sec) do
 		if not _G.Lv then continue end
 		pcall(function()
-			CheckQuest()
+			-- QUEST
 			if not HasQuest() then
 				AbandonQuest()
-				TakeQuest()
+				_tp(CFrameQuest)
+				RS.Remotes.CommF_:InvokeServer("StartQuest",NameQuest,LevelQuest)
+				task.wait(0.5)
 				return
 			end
 			if not RightQuest() then
 				AbandonQuest()
+				task.wait(0.3)
 				return
 			end
-			local mob=GetMob()
+
+			-- FIND MOB
+			local mob
+			for _,v in pairs(workspace.Enemies:GetChildren()) do
+				if v.Name==NameMon and v:FindFirstChild("Humanoid") and v.Humanoid.Health>0 and v:FindFirstChild("HumanoidRootPart") then
+					mob=v
+					break
+				end
+			end
+
+			-- FARM
 			if mob then
-				KillMob(mob)
+				repeat
+					if not _G.Lv or not mob.Parent or mob.Humanoid.Health<=0 then break end
+					AutoHaki()
+					weaponSc("Tool")
+					_tp(mob.HumanoidRootPart.CFrame*CFrame.new(0,30,0))
+					BringEnemy()
+					task.wait(0.1)
+				until false
 			else
 				_tp(CFrameMon)
 			end
