@@ -2022,71 +2022,41 @@ v1:Callback(function(Value)
   _G.Level = Value
 end)
 spawn(function()
-    while task.wait(0.1) do
-        pcall(function()
-            CheckQuest()  -- Hàm kiểm tra quest (cần định nghĩa)
-            
-            local QuestGui = game.Players.LocalPlayer.PlayerGui.Main.Quest
-            
-            -- Kiểm tra nếu có quest
-            if QuestGui.Visible then
-                local v223 = QuestGui.Container.QuestTitle.Title.Text
-                
-                -- Hủy quest nếu sai mob
-                if not string.find(v223, NameMon) then
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-                    task.wait(0.5)
+    while task.wait(0.2) do
+        if _G.Level then
+            pcall(function()
+
+                CheckQuest()
+
+                local plr = game.Players.LocalPlayer
+                local QuestGui = plr.PlayerGui.Main.Quest
+
+                if QuestGui.Visible then
+                    local QuestText = QuestGui.Container.QuestTitle.Title.Text
+
+                    if QuestText and NameMon and not string.find(QuestText, NameMon) then
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                        task.wait(1)
+                        return
+                    end
                 end
-            end
-            
-            -- Nhận quest mới nếu chưa có
-            if QuestGui.Visible == false then
-                _tp(CFrameQuest)
-                task.wait(0.1)
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLevel)
-            end
-          
-            if QuestGui.Visible == true then
-                _tp(CFrameMon)
-                task.wait(0.3)
-                AutoHaki()      -- Bật Haki
-                BringMob()      -- Kéo mob
-                AttackNoCoolDown() -- Auto attack
-            end
-        end)
-    end   
-end)spawn(function()
-    while task.wait(0.1) do
-        pcall(function()
-            CheckQuest()  -- Hàm kiểm tra quest (cần định nghĩa)
-            
-            local QuestGui = game.Players.LocalPlayer.PlayerGui.Main.Quest
-            
-            -- Kiểm tra nếu có quest
-            if QuestGui.Visible then
-                local v223 = QuestGui.Container.QuestTitle.Title.Text
-                
-                -- Hủy quest nếu sai mob
-                if not string.find(v223, NameMon) then
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-                    
+
+                if not QuestGui.Visible then
+                    _tp(CFrameQuest)
+                    task.wait(0.6)
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, LevelQuest)
+                    task.wait(0.6)
+                    return
                 end
-            end
-            
-            -- Nhận quest mới nếu chưa có
-            if QuestGui.Visible == false then
-                _tp(CFrameQuest)
-                task.wait(0.1)
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLevel)
-            end
-          
-            if QuestGui.Visible == true then
+
                 _tp(CFrameMon)
-                task.wait(0.3)
-                AutoHaki()      -- Bật Haki
-                BringMob()      -- Kéo mob
-                AttackNoCoolDown() -- Auto attack
-            end
-        end)
-    end   
+                task.wait(0.25)
+
+                AutoHaki()
+                BringMob()
+                AttackNoCoolDown()
+
+            end)
+        end
+    end
 end)
