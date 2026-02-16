@@ -1538,36 +1538,6 @@ function AttackNoCoolDown()
         end)
     end
 end
-Type = 1
-spawn(function()
-    while wait() do
-        if (Type == 1) then
-            Pos = CFrame.new(0, 40, 0)
-        elseif (Type == 2) then
-            Pos = CFrame.new(- 40, 40, 0)
-        elseif (Type == 3) then
-            Pos = CFrame.new(40, 40, 0)
-        elseif (Type == 4) then
-            Pos = CFrame.new(0, 40, 40)
-        elseif (Type == 5) then
-            Pos = CFrame.new(0, 40, - 40)
-        end
-    end
-end)
-spawn(function()
-    while wait() do
-        Type = 1
-        wait(0.2)
-        Type = 2
-        wait(0.2)
-        Type = 3
-        wait(0.2)
-        Type = 4
-        wait(0.2)
-        Type = 5
-        wait(0.2)
-    end
-end)
 local Enemies = workspace.Enemies
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -2020,6 +1990,25 @@ function GetNearestMob()
     end
     return nearest, dist
 end
+BringEnemy = function()
+    if not _B then
+        return
+    end
+    for _, v in pairs(workspace.Enemies:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+            if (v.PrimaryPart.Position - PosMon).Magnitude <= 300 then
+                v.PrimaryPart.CFrame = CFrame.new(PosMon)
+                v.PrimaryPart.CanCollide = true;
+                v:FindFirstChild("Humanoid").WalkSpeed = 0;
+                v:FindFirstChild("Humanoid").JumpPower = 0;
+                if v.Humanoid:FindFirstChild("Animator") then
+                    v.Humanoid.Animator:Destroy()
+                end;
+                game.Players.LocalPlayer.SimulationRadius = math.huge
+            end
+        end
+    end                    	
+end
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Window = redzlib:MakeWindow({
   Title = "HNH Hub : Blox fruit",
@@ -2125,7 +2114,7 @@ spawn(function()
                 _tp(CFrameMon)
                 task.wait(0.25)
                 AutoHaki()
-                BringMon()
+                BringEnemy()
                 AttackNoCoolDown()
             end)
         end
@@ -2150,7 +2139,7 @@ spawn(function()
                 else
                     AutoHaki()
                     AttackNoCoolDown()
-                    BringMon()
+                    BringEnemy()
                 end
             end
         end
