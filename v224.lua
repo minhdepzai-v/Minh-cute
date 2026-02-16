@@ -2024,27 +2024,27 @@ end)
 spawn(function()
     while task.wait(0.1) do
         if _G.Level then
-            pcall(function()
-                local QuestGui = game.Players.LocalPlayer.PlayerGui.Main.Quest
-                local v223 = QuestGui.Container.QuestTitle.Title.Text
-                if v223 and not string.find(v223, NameMon) then
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-                end
-                if QuestGui.Visible == false then
-                    _tp(CFrameQuest)
-                    task.wait(0.2)
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(
-                        "StartQuest",
-                        NameQuest,
-                        LevelQuest
-                    )
-                else
-                    _tp(CFrameMon)
-                    task.wait(0.2)
-                    BringMob()
-                    AttackNoCoolDown()
-                end
-            end)
-        end
-    end
+        pcall(function()
+            local QuestGui = game.Players.LocalPlayer.PlayerGui.Main.Quest
+            local v223 = QuestGui.Container.QuestTitle.Title.Text
+            if v223 and not string.find(v223, NameMon) then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+            end
+            if QuestGui.Visible == false then
+                _tp(CFrameQuest)
+                task.wait(0.3)
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(
+                    "StartQuest",
+                    NameQuest,
+                    LevelQuest
+                )
+            else
+                _tp(CFrameMon)
+                task.wait(0.3)
+                BringMob()
+                AttackNoCoolDown()
+            end
+        end)
+      end
+  end
 end)
