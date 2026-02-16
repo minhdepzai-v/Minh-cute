@@ -1151,31 +1151,39 @@ end)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-function _tp(CF,Speed)
-Speed = Speed or 310
-local plr = Players.LocalPlayer
-local chr = plr.Character or plr.CharacterAdded:Wait()
-local hrp = chr:WaitForChild("HumanoidRootPart")
-hrp.AssemblyLinearVelocity = Vector3.zero
-hrp.AssemblyAngularVelocity = Vector3.zero
-local dist = (hrp.Position - CF.Position).Magnitude
-local time = math.max(dist / Speed,0.15)
-local tween = TweenService:Create(
-    hrp,
-    TweenInfo.new(time,Enum.EasingStyle.Linear),
-    {
-     CFrame = CF
-}
-)
-tween:Play()
-local con
-con = RunService.Heartbeat:Connect(function()
+
+function _tp(CF, Speed)
+    Speed = Speed or 310
+
+    local plr = Players.LocalPlayer
+    local chr = plr.Character or plr.CharacterAdded:Wait()
+    local hrp = chr:WaitForChild("HumanoidRootPart")
+
     hrp.AssemblyLinearVelocity = Vector3.zero
-end)
-tween.Completed:Wait()
-con:Disconnect()
-chr:PivotTo(CF)
-hl:Destroy()
+    hrp.AssemblyAngularVelocity = Vector3.zero
+
+    local dist = (hrp.Position - CF.Position).Magnitude
+    local time = math.max(dist / Speed, 0.15)
+
+    local tween = TweenService:Create(
+        hrp,
+        TweenInfo.new(time, Enum.EasingStyle.Linear),
+        {
+            CFrame = CF
+        }
+    )
+
+    tween:Play()
+
+    local con
+    con = RunService.Heartbeat:Connect(function()
+        hrp.AssemblyLinearVelocity = Vector3.zero
+    end)
+
+    tween.Completed:Wait()
+    con:Disconnect()
+
+    chr:PivotTo(CF)
 end
 local Players = game:GetService("Players")
 function realtp(CF)
@@ -1941,6 +1949,28 @@ berriesEsp = function()
         end
     end
 end
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local lp = Players.LocalPlayer
+function GetNearestMob()
+    local char = lp.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    local nearest
+    local dist = math.huge
+    for _,v in pairs(Workspace.Enemies:GetChildren()) do
+        if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
+            if v.Humanoid.Health > 0 then
+                local mag = (v.HumanoidRootPart.Position - hrp.Position).Magnitude
+                if mag < dist then
+                    dist = mag
+                    nearest = v
+                end
+            end
+        end
+    end
+    return nearest, dist
+end
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Window = redzlib:MakeWindow({
   Title = "HNH Hub : Blox fruit",
@@ -2013,34 +2043,29 @@ local Misc = Window:MakeTab({
   Title = "Tab Miscellaneous", 
   Icon = "boxes"
 })
-local v1 = Main:AddToggle({
+local level = Main:AddToggle({
   Name = "Auto Level",
-  Description = "",
+  Description = "Error and i cant fix it:)",
   Default = false 
 })
-v1:Callback(function(Value)
+level:Callback(function(Value)
   _G.Level = Value
 end)
 spawn(function()
     while task.wait(0.2) do
         if _G.Level then
             pcall(function()
-
                 CheckQuest()
-
                 local plr = game.Players.LocalPlayer
                 local QuestGui = plr.PlayerGui.Main.Quest
-
                 if QuestGui.Visible then
                     local QuestText = QuestGui.Container.QuestTitle.Title.Text
-
                     if QuestText and NameMon and not string.find(QuestText, NameMon) then
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
                         task.wait(1)
                         return
                     end
                 end
-
                 if not QuestGui.Visible then
                     _tp(CFrameQuest)
                     task.wait(0.6)
@@ -2048,15 +2073,37 @@ spawn(function()
                     task.wait(0.6)
                     return
                 end
-
                 _tp(CFrameMon)
                 task.wait(0.25)
-
                 AutoHaki()
-                BringMob()
+                BringMon()
                 AttackNoCoolDown()
-
             end)
+        end
+    end
+end)
+local v2 = Main:AddToggle({
+  Name = "Auto Mob Aura",
+  Description = "",
+  Default = false 
+})
+v2:Callback(function(Value)
+  _G.Aura = Value
+end)
+spawn(function()
+    while task.wait(0.1) do
+        if _G.Aura then
+            local mob, distance = GetNearestMob()
+            if mob then
+                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
+                if distance > 20 then
+                    _tp(cf)
+                else
+                    AutoHaki()
+                    AttackNoCoolDown()
+                    BringMon()
+                end
+            end
         end
     end
 end)
