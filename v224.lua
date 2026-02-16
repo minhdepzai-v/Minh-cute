@@ -2023,6 +2023,7 @@ v1:Callback(function(Value)
 end)
 spawn(function()
     while task.wait(0.1) do
+      if _G.Level then
         pcall(function()
             CheckQuest()  -- Hàm kiểm tra quest (cần định nghĩa)
             
@@ -2056,5 +2057,6 @@ spawn(function()
                 AttackNoCoolDown() -- Auto attack
             end
         end)
+      end
     end   
 end)
