@@ -1208,26 +1208,7 @@ if dist > 100 then
 end
 realtp(CF)
 end
-local Players = game:GetService("Players")
-function BringMon(Range)
-Range = Range or 490
-local plr = Players.LocalPlayer
-local chr = plr.Character or plr.CharacterAdded:Wait()
-local hrp = chr:WaitForChild("HumanoidRootPart")
-for _,v in pairs(workspace:GetDescendants()) do
-if v:IsA("Model") and v ~= chr and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
-local dist = (v.HumanoidRootPart.Position - hrp.Position).Magnitude
-if dist <= Range then
-v.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0,0,-5)
-v.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-v.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-v.HumanoidRootPart.CanCollide = false
-v.Humanoid.WalkSpeed = 0
-v.Humanoid.JumpPower = 0
-end
-end
-end
-end
+
 local plr = game.Players.LocalPlayer
 replicated = game:GetService("ReplicatedStorage")
 statsSetings = function(Num, value)
@@ -1587,6 +1568,74 @@ spawn(function()
         wait(0.2)
     end
 end)
+local Enemies = workspace.Enemies
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+function BringMon(radius)
+    radius = radius or 60
+
+    if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+
+    local Root = Player.Character.HumanoidRootPart
+
+    for _, v in pairs(Enemies:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+            local hrp = v:FindFirstChild("HumanoidRootPart")
+
+            if hrp and (hrp.Position - Root.Position).Magnitude <= radius then
+                pcall(function()
+                    v.Humanoid:ChangeState(11)
+
+                    for _, part in pairs(v:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                            part.Massless = true
+                        end
+                    end
+
+                    hrp.CFrame = Root.CFrame * Pos
+                end)
+            end
+        end
+    end
+end
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Enemies = workspace.Enemies
+
+function BringMonV(radius)
+    radius = radius or 300
+
+    if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+
+    local Root = Player.Character.HumanoidRootPart
+
+    for _, v in pairs(Enemies:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+            local hrp = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("Head")
+
+            if hrp and (hrp.Position - Root.Position).Magnitude <= radius then
+                pcall(function()
+                    v.Humanoid:ChangeState(11)
+
+                    for _, part in pairs(v:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                            part.Massless = true
+                        end
+                    end
+
+                    hrp.CFrame = Root.CFrame * CFrame.new(0,0,-3)
+                end)
+            end
+        end
+    end
+end
 function AutoHaki()
     if not game:GetService("Players").LocalPlayer.Character:FindFirstChild("HasBuso") then
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
@@ -2095,7 +2144,7 @@ spawn(function()
         if _G.Aura then
             local mob, distance = GetNearestMob()
             if mob then
-                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,-3)
+                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0,6,0)
                 if distance > 20 then
                     _tp(cf)
                 else
