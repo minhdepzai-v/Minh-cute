@@ -2023,38 +2023,70 @@ v1:Callback(function(Value)
 end)
 spawn(function()
     while task.wait(0.1) do
-      if _G.Level then
         pcall(function()
-            CheckQuest()
+            CheckQuest()  -- Hàm kiểm tra quest (cần định nghĩa)
             
             local QuestGui = game.Players.LocalPlayer.PlayerGui.Main.Quest
-            local QuestTitle = QuestGui.Container.QuestTitle.Title.Text
             
-            -- 1. Kiểm tra và hủy quest sai
+            -- Kiểm tra nếu có quest
             if QuestGui.Visible then
-                if not string.find(QuestTitle, NameMon) then
+                local v223 = QuestGui.Container.QuestTitle.Title.Text
+                
+                -- Hủy quest nếu sai mob
+                if not string.find(v223, NameMon) then
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
                     task.wait(0.5)
                 end
             end
             
-            -- 2. Nhận quest mới nếu chưa có
-            if not QuestGui.Visible then
+            -- Nhận quest mới nếu chưa có
+            if QuestGui.Visible == false then
                 _tp(CFrameQuest)
-                task.wait(0.5)
+                task.wait(0.1)
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLevel)
-                task.wait(0.5)
             end
-            
-            -- 3. Farm mob khi đã có quest
-            if QuestGui.Visible then
+          
+            if QuestGui.Visible == true then
                 _tp(CFrameMon)
                 task.wait(0.3)
-                AutoHaki()
-                BringMob()
-                AttackNoCoolDown()
+                AutoHaki()      -- Bật Haki
+                BringMob()      -- Kéo mob
+                AttackNoCoolDown() -- Auto attack
             end
         end)
-      end
+    end   
+end)spawn(function()
+    while task.wait(0.1) do
+        pcall(function()
+            CheckQuest()  -- Hàm kiểm tra quest (cần định nghĩa)
+            
+            local QuestGui = game.Players.LocalPlayer.PlayerGui.Main.Quest
+            
+            -- Kiểm tra nếu có quest
+            if QuestGui.Visible then
+                local v223 = QuestGui.Container.QuestTitle.Title.Text
+                
+                -- Hủy quest nếu sai mob
+                if not string.find(v223, NameMon) then
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                    
+                end
+            end
+            
+            -- Nhận quest mới nếu chưa có
+            if QuestGui.Visible == false then
+                _tp(CFrameQuest)
+                task.wait(0.1)
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLevel)
+            end
+          
+            if QuestGui.Visible == true then
+                _tp(CFrameMon)
+                task.wait(0.3)
+                AutoHaki()      -- Bật Haki
+                BringMob()      -- Kéo mob
+                AttackNoCoolDown() -- Auto attack
+            end
+        end)
     end   
 end)
